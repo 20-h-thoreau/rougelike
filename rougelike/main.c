@@ -344,5 +344,5 @@ struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
             return enemystructs[i];
         }
     }
-    return (struct ennemyattributes *)&player;
+    return (struct enemyattritbutes *)&player;
 }
