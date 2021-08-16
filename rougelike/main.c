@@ -20,6 +20,7 @@ typedef struct enemyattritbutes {
     unsigned int y;
     int HP;
     int Attack;
+    int accuracy;
 } enemyattributes;
 
 struct enemyattritbutes *enemystructs[256]; //pointer to enemy structs
@@ -38,10 +39,10 @@ typedef struct playerattributes {
 
 struct playerattributes player;
 //lets have it make a path randomly
-void buildroom(int x, int y);
-void attack (int *ptr);
+
 void generateenemy(unsigned int X, unsigned int Y);
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y);
+void attack(struct enemyattritbutes *enemyptr);
 
 int main(int argc, const char * argv[]) {
     srand(time(0));
@@ -143,17 +144,18 @@ int main(int argc, const char * argv[]) {
                         break;
                     case 2:
                         //map[y][x]='S';
-                        
-                        generateenemy(x, y);
-                        ++enemycount;
+                        if (x!=startingx && y!=startingy){
+                            generateenemy(x, y);
+                            ++enemycount;
+                        }
                         break;
                         
                     default :
                         break;
                 }
                 if (room>(roomconstant-(roomconstant/5))){ //turn off thischeck in cave mode
-                direction=rand()&0x3;
-            }
+                    direction=rand()&0x3;
+                }
                 
             move:
                 switch (direction){
@@ -179,23 +181,26 @@ int main(int argc, const char * argv[]) {
                 }
                 
                 ++buildcounter;
-                if (buildcounter==buildtime){
+                if (buildcounter>=buildtime){
                     break;
                 }
                 
             }
             ++buildtotal;
             if (buildtotal==branches){
-                map [y][x]='>';
+                map [y][x]='%';
             }
         }
         
         
+        
+        
+        
         // player
         bool level=false;
-         
+        player.standingon='.';
         while (!level){
-            
+
         switch (player.standingon){
             case '$':
                 player.standingon='.';
@@ -221,11 +226,15 @@ int main(int argc, const char * argv[]) {
                     printf("%c",map[y][x]);
                 }
             }
-            
+
             printf("\n HP:%d/%d  Gold:%d \n \n", player.HP, player.MaxHP,player.Gold);
-            char input=getchar(); //player input
-            
-            struct enemyattritbutes *enemyptr;
+            char input;
+        levelloop:
+            input=getchar(); //player input
+            if(input=='\n'){
+                goto levelloop;
+            }
+            //struct enemyattritbutes *enemyptr;
             switch (input){
                 case 'h':
                     
@@ -235,8 +244,7 @@ int main(int argc, const char * argv[]) {
                         case '#':
                             break;
                         case 'S':
-                            enemyptr=whichenemyatcoord(player.x-1, player.y);
-                            enemyptr->HP-=player.Attack;
+                            attack(whichenemyatcoord(player.x-1, player.y));
                             break;
                         default:
                             map[player.y][player.x]=player.standingon;
@@ -253,8 +261,7 @@ int main(int argc, const char * argv[]) {
                         case '#':
                             break;
                         case 'S':
-                            enemyptr=whichenemyatcoord(player.x, player.y-1);
-                            enemyptr->HP-=player.Attack;
+                            attack(whichenemyatcoord(player.x, player.y-1));
                             break;
                         default:
                             map[player.y][player.x]=player.standingon;
@@ -270,8 +277,8 @@ int main(int argc, const char * argv[]) {
                         case '#':
                             break;
                         case 'S':
-                            enemyptr=whichenemyatcoord(player.x, player.y+1);
-                            enemyptr->HP-=player.Attack;
+                            attack(whichenemyatcoord(player.x, player.y+1));
+                            
                             break;
                         default:
                             map[player.y][player.x]=player.standingon;
@@ -287,8 +294,8 @@ int main(int argc, const char * argv[]) {
                         case '#':
                             break;
                         case 'S':
-                            enemyptr=whichenemyatcoord(player.x+1, player.y);
-                            enemyptr->HP-=player.Attack;
+                            attack(whichenemyatcoord(player.x+1, player.y));
+                            
                             break;
                         default:
                             map[player.y][player.x]=player.standingon;
@@ -298,7 +305,7 @@ int main(int argc, const char * argv[]) {
                     }
                     break;
                 case '>':
-                    if (player.standingon=='>'){
+                    if (player.standingon=='%'){
                         level=true;
                         ++player.level;
                     }
@@ -306,24 +313,43 @@ int main(int argc, const char * argv[]) {
                 default:
                     break;
             }
+        
+            //enemyai
+            for (signed int i=0, x=0, y=0, dir=0; i>enemycount; ++i){
+                x=enemystructs[i]->x-player.x;
+                y=enemystructs[i]->y-player.y;
+                /*
+                 
+                 if x neg we need to move right
+                 if y neg we need to move down
+                 if they cant move there, then we need to find which one is farthest from 0 and have them walk in that direction.
+                000
+             111    001
+            110      010
+             101    011
+                100
+                 
+                 */
+                //bigger y=further down
+                
+            }
+            
+            
             
         }
         
         
     }
+    
+    
+    
+    
+    
     return 0;
 
 }
 
-    
-void buildroom(int x, int y){
 
-}
-
-
-void attack (int *ptr){
-    
-}
 
 void generateenemy(unsigned int X, unsigned int Y){
 
@@ -333,7 +359,8 @@ void generateenemy(unsigned int X, unsigned int Y){
     enemystructs[enemycount]->x=X;
     enemystructs[enemycount]->y=Y;
     enemystructs[enemycount]->HP=10;
-    enemystructs[enemycount]->Attack=5;
+    enemystructs[enemycount]->Attack=3;
+    enemystructs[enemycount]->accuracy=3;
     ++enemycount; //no idea why but I have int incriment this outside it for the map ti wirk and inside here for the poitners to work.
     
 }
@@ -345,4 +372,22 @@ struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
         }
     }
     return (struct enemyattritbutes *)&player;
+}
+
+void attack(struct enemyattritbutes *enemyptr){
+    if (rand()%10!=0){
+        player.HP-=enemyptr->Attack;
+        printf ("Player hit, ");
+    }
+    else {
+        printf ("Player misses, ");
+    }
+    if (rand()%enemyptr->accuracy!=0){
+        enemyptr->HP-=player.Attack;
+        
+        printf ("enemy hit \n");
+    }
+    else {
+        printf ("enemy misses \n");
+    }
 }
