@@ -21,6 +21,7 @@ typedef struct enemyattritbutes {
     int HP;
     int Attack;
     int accuracy;
+    char standingon;
 } enemyattributes;
 
 struct enemyattritbutes *enemystructs[256]; //pointer to enemy structs
@@ -201,18 +202,18 @@ int main(int argc, const char * argv[]) {
         player.standingon='.';
         while (!level){
 
-        switch (player.standingon){
-            case '$':
-                player.standingon='.';
-                player.Gold+=5;
-        }
+            switch (player.standingon){
+                case '$':
+                    player.standingon='.';
+                    player.Gold+=5;
+            }
             
             for (int i=0; i<enemycount; ++i){
-                if (enemystructs[i]->HP>=0){
+                if (enemystructs[i]->HP>0){
                     map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->type;
                 }
                 else{
-                    map[enemystructs[i]->y][enemystructs[i]->x]='.';
+                    map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->standingon;
                 }
             }
             
@@ -315,25 +316,132 @@ int main(int argc, const char * argv[]) {
             }
         
             //enemyai
-            for (signed int i=0, x=0, y=0, dir=0; i>enemycount; ++i){
-                x=enemystructs[i]->x-player.x;
-                y=enemystructs[i]->y-player.y;
-                /*
-                 
-                 if x neg we need to move right
-                 if y neg we need to move down
-                 if they cant move there, then we need to find which one is farthest from 0 and have them walk in that direction.
-                000
-             111    001
-            110      010
-             101    011
-                100
-                 
-                 */
-                //bigger y=further down
+            for (int i=0; i<enemycount; ++i){
                 
-            }
+                if (enemystructs[i]->HP>0){
+                    signed int x=enemystructs[i]->x-player.x;
+                    signed int y=enemystructs[i]->y-player.y;
+                    int movechangedir=0;
+                    int move=0xffff;
+                    
+                    if (x==0 && y>0){
+                        move=0;
+                    }
+                    else if (x>0 && y>0){
+                        move=1;
+                    }
+                    else if (x>0 && y==0){
+                        move=2;
+                    }
+                    else if (x>0 && y>0){
+                        move=3;
+                    }
+                    else if (x==0 && y<0){
+                        move=4;
+                    }
+                    else if (x>0 && y<0){
+                        move=5;
+                    }
+                    else if (x>0 && y==0){
+                        move=6;
+                    }
+                    else if (x>0 && y>0){
+                        move=7;
+                    }
+                    
+                    /*
+                     
+                     
+                     if x neg we need to move right
+                     if y neg we need to move down
+                     if they cant move there, then we need to find which one is farthest from 0 and have them walk in that direction.
+                    000
+                 111    001
+                110      010
+                 101    011
+                    100
+                     
+                     */
+                    //bigger y=further down
+                    
+                    bool canmove=false;
+                    signed int xadd=0;
+                    signed int yadd=0;
+                    while (!canmove){
+                        switch (move){
+                            case 0:
+                                xadd=0;
+                                yadd=-1;
+                                break;
+                            case 1:
+                                xadd=1;
+                                yadd=-1;
+                                break;
+                            case 2:
+                                xadd=1;
+                                yadd=0;
+                            case 3:
+                                xadd=1;
+                                yadd=1;
+                                break;
+                            case 4:
+                                yadd=1;
+                                xadd=0;
+                                break;
+                            case 5:
+                                yadd=1;
+                                xadd=-1;
+                                break;
+                            case 6:
+                                xadd=-1;
+                                yadd=0;
+                                break;
+                            case 7:
+                                xadd=-1;
+                                yadd=-1;
+                                break;
+                            default:
+                                xadd=0;
+                                yadd=0;
+                                break;
+                        }
+                        
+                        int enemynewlocationx=enemystructs[i]->x+xadd;
+                        int enemynewlocationy=enemystructs[i]->y+yadd;
+                        
+                        switch(map[enemynewlocationy][enemynewlocationx]){
+                            case ' ':
+                                break;
+                            case '#':
+                                break;
+                            case 'S':
+                                break;
+                            case '@':
+                                break;
+                            default:
+                                canmove=true;
+                                break;
+                                
+                        }
+                        
+                        if (!canmove){
+                            if(movechangedir==0){
+                                movechangedir=(((rand()&0x1)*2)-1)&0x07;
+                            }
+                            move+=movechangedir;
+                        }
+                        
+                    }
+      
+                    //now time to move the enemy
+                    map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->standingon;
+                    enemystructs[i]->y+=yadd;
+                    enemystructs[i]->x+=xadd;
+                    enemystructs[i]->standingon=map[enemystructs[i]->y][enemystructs[i]->x];
+                    //map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->type;
+                }
             
+            }
             
             
         }
@@ -361,6 +469,7 @@ void generateenemy(unsigned int X, unsigned int Y){
     enemystructs[enemycount]->HP=10;
     enemystructs[enemycount]->Attack=3;
     enemystructs[enemycount]->accuracy=3;
+    enemystructs[enemycount]->standingon='.';
     ++enemycount; //no idea why but I have int incriment this outside it for the map ti wirk and inside here for the poitners to work.
     
 }
