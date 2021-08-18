@@ -321,7 +321,7 @@ int main(int argc, const char * argv[]) {
                 if (enemystructs[i]->HP>0){
                     signed int x=enemystructs[i]->x-player.x;
                     signed int y=enemystructs[i]->y-player.y;
-                    int movechangedir=0;
+                    signed int movechangedir=0;
                     int move=0xffff;
                     
                     if (x==0 && y>0){
@@ -426,7 +426,7 @@ int main(int argc, const char * argv[]) {
                         
                         if (!canmove){
                             if(movechangedir==0){
-                                movechangedir=(((rand()&0x1)*2)-1)&0x07;
+                                movechangedir=-1;//need to make it soemthing cooler
                             }
                             move+=movechangedir;
                         }
