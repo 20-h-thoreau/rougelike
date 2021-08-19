@@ -321,7 +321,7 @@ int main(int argc, const char * argv[]) {
                 if (enemystructs[i]->HP>0){
                     signed int x=enemystructs[i]->x-player.x;
                     signed int y=enemystructs[i]->y-player.y;
-                    signed int movechangedir=0;
+                    signed int movechangedir=-1;
                     int move=0xffff;
                     
                     if (x==0 && y>0){
@@ -363,11 +363,12 @@ int main(int argc, const char * argv[]) {
                      
                      */
                     //bigger y=further down
-                    
+                    bool attacked=false;
                     bool canmove=false;
                     signed int xadd=0;
                     signed int yadd=0;
                     while (!canmove){
+                        move=move&0x07;
                         switch (move){
                             case 0:
                                 xadd=0;
@@ -417,7 +418,13 @@ int main(int argc, const char * argv[]) {
                             case 'S':
                                 break;
                             case '@':
+                                attack(enemystructs[i]);
+                                attacked=true;
                                 break;
+                            case '.':
+                                canmove=true;
+                                break;
+                            
                             default:
                                 canmove=true;
                                 break;
@@ -425,10 +432,13 @@ int main(int argc, const char * argv[]) {
                         }
                         
                         if (!canmove){
-                            if(movechangedir==0){
+                            /*if(movechangedir==0){
                                 movechangedir=-1;//need to make it soemthing cooler
-                            }
+                            }*/
                             move+=movechangedir;
+                        }
+                        else if (attacked){
+                            goto endofloop;
                         }
                         
                     }
@@ -439,6 +449,8 @@ int main(int argc, const char * argv[]) {
                     enemystructs[i]->x+=xadd;
                     enemystructs[i]->standingon=map[enemystructs[i]->y][enemystructs[i]->x];
                     //map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->type;
+                endofloop:
+                    x=x;
                 }
             
             }
