@@ -53,10 +53,18 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "x 64"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "y 64"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "x 32"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "y 32"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

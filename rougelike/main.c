@@ -224,7 +224,7 @@ int main(int argc, const char * argv[]) {
             printf("level:%d \n", player.level+1);
             for(int y=0; y<stagesizey; ++y){
                 for(int x=0; x<stagesizex; ++x){
-                    printf("%c",map[y][x]);
+                    printf("%c ",map[y][x]);//the space after is to space it properly so its sqaureish
                 }
             }
 
@@ -363,7 +363,7 @@ int main(int argc, const char * argv[]) {
                      
                      */
                     //bigger y=further down
-                    bool attacked=false;
+                    
                     bool canmove=false;
                     signed int xadd=0;
                     signed int yadd=0;
@@ -405,7 +405,8 @@ int main(int argc, const char * argv[]) {
                             default:
                                 xadd=0;
                                 yadd=0;
-                                printf("this shouldnt be happening\n");
+                                canmove=true;
+                                //printf("this shouldnt be happening\n");
                                 break;
                         }
                         
@@ -414,7 +415,7 @@ int main(int argc, const char * argv[]) {
                         
                         switch(map[enemynewlocationy][enemynewlocationx]){
                             case ' ':
-                                printf("tried to walk on blankspace\n");
+                                //printf("tried to walk on blankspace\n");
                                 break;
                             case '#':
                                 break;
