@@ -296,7 +296,7 @@ int main(int argc, const char * argv[]) {
                             break;
                         case 'S':
                             attack(whichenemyatcoord(player.x+1, player.y));
-                            
+                            printf("the player attacks:\n");
                             break;
                         default:
                             map[player.y][player.x]=player.standingon;
@@ -321,8 +321,8 @@ int main(int argc, const char * argv[]) {
                 if (enemystructs[i]->HP>0){
                     signed int x=enemystructs[i]->x-player.x;
                     signed int y=enemystructs[i]->y-player.y;
-                    signed int movechangedir=-1;
-                    int move=0xffff;
+                    signed int movechangedir=0;
+                    int move=0x00;
                     
                     if (x==0 && y>0){
                         move=0;
@@ -367,6 +367,7 @@ int main(int argc, const char * argv[]) {
                     bool canmove=false;
                     signed int xadd=0;
                     signed int yadd=0;
+                    int numberofloops=0;;
                     while (!canmove){
                         move=move&0x07;
                         switch (move){
@@ -404,6 +405,7 @@ int main(int argc, const char * argv[]) {
                             default:
                                 xadd=0;
                                 yadd=0;
+                                printf("this shouldnt be happening\n");
                                 break;
                         }
                         
@@ -412,34 +414,42 @@ int main(int argc, const char * argv[]) {
                         
                         switch(map[enemynewlocationy][enemynewlocationx]){
                             case ' ':
+                                printf("tried to walk on blankspace\n");
                                 break;
                             case '#':
                                 break;
                             case 'S':
                                 break;
-                            case '@':
-                                attack(enemystructs[i]);
-                                attacked=true;
-                                break;
-                            case '.':
-                                canmove=true;
-                                break;
-                            
                             default:
                                 canmove=true;
                                 break;
                                 
                         }
+                        if (enemynewlocationx==player.x && enemynewlocationy==player.y){
+                            printf("the enemy attacks:\n");
+                            attack(enemystructs[i]);
+                            xadd=0;
+                            yadd=0;
+                            canmove=true;
+                            break;
+                        }
+                        if (numberofloops>7){
+                            canmove=true;
+                            xadd=0;
+                            yadd=0;
+                            printf("cant move");
+                        }
                         
                         if (!canmove){
-                            /*if(movechangedir==0){
-                                movechangedir=-1;//need to make it soemthing cooler
-                            }*/
+                            if(movechangedir==0){
+                                movechangedir=( ( (rand()&0x01)<<1 )-1 );//need to make it soemthing cooler
+                                //maybe we could fix it by counting 8 tries and when 8 tries fail it jsut styops trying/
+                            }
                             move+=movechangedir;
+                            ++numberofloops;
+                            
                         }
-                        else if (attacked){
-                            goto endofloop;
-                        }
+                        
                         
                     }
       
