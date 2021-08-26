@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
 
 #define lowestroomconstant 10
 int stagesizey;
@@ -15,6 +16,7 @@ int branches;
 
 
 typedef struct enemyattritbutes {
+    char *name;
     char type;
     unsigned int x;
     unsigned int y;
@@ -25,9 +27,22 @@ typedef struct enemyattritbutes {
 } enemyattributes;
 
 struct enemyattritbutes *enemystructs[256]; //pointer to enemy structs
+
+typedef const struct enemydata {
+    char *name;
+    int HP;
+    int Attack;
+    int Accuracy;
+
+} enemydata;
+
+const struct enemydata salamander={"Salamander\0",10,3,3};
+const struct enemydata goblin={"Goblin\0",20,4,2};
+
 int enemycount; //lengths of enemy structs
 
 typedef struct playerattributes {
+    char *name;
     unsigned int x;
     unsigned int y;
     int HP;
@@ -41,11 +56,13 @@ typedef struct playerattributes {
 struct playerattributes player;
 //lets have it make a path randomly
 
-void generateenemy(unsigned int X, unsigned int Y);
+void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr);
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y);
 void attack(struct enemyattritbutes *enemyptr);
+void printhelpmenu(void);
 
 int main(int argc, const char * argv[]) {
+    
     srand(time(0));
     stagesizex=64;
     stagesizey=64;
@@ -56,9 +73,11 @@ int main(int argc, const char * argv[]) {
     roomlenghtmin=10;
     branches=5;
     player.MaxHP=30;
+    player.name="Player\0";
     
     //this reintiizlizes varibles based on the envirometnal variables given by the user
     for (int i=1; i<argc; ++i){
+        /*
         switch (*argv[i]){
             case 'x':
                 ++i;
@@ -71,10 +90,29 @@ int main(int argc, const char * argv[]) {
             case 'h':
                 printf("x <n> width of levels \ny <n> hieght of levels");
                 return 0;
-                
+            case 'n':
+                ++i;
+                strcpy(player.name, argv[i]);
+                break;
+            */
+        if (strcmp(argv[i], "-x")==0){
             
+            stagesizex=atoi(argv[++i]);
+        }
+        else if (strcmp(argv[i], "-y")==0){
+            
+            stagesizey=atoi(argv[++i]);
+        }
+        else if (strcmp(argv[i], "-n")==0){
+            //this doesnt work for some reason
+            //strcpy(player.name, argv[++i]);
+        }
+        else if (strcmp(argv[i], "-h")==0){
+            printhelpmenu();
+            return 0;
         }
     }
+    
     
     
     
@@ -146,7 +184,23 @@ int main(int argc, const char * argv[]) {
                     case 2:
                         //map[y][x]='S';
                         if (x!=startingx && y!=startingy){
-                            generateenemy(x, y);
+                            generateenemy(x, y, &salamander);
+                            ++enemycount;
+                        }
+                        break;
+
+                    case 3:
+                        //map[y][x]='S';
+                        if (x!=startingx && y!=startingy){
+                            generateenemy(x, y, &salamander);
+                            ++enemycount;
+                        }
+                        break;
+                        
+                    case 4:
+                        //map[y][x]='G';
+                        if (x!=startingx && y!=startingy){
+                            generateenemy(x, y, &goblin);
                             ++enemycount;
                         }
                         break;
@@ -427,7 +481,7 @@ int main(int argc, const char * argv[]) {
                                 
                         }
                         if (enemynewlocationx==player.x && enemynewlocationy==player.y){
-                            printf("the enemy attacks:\n");
+                            printf("T he %s attacks:\n", enemystructs[i]->name);
                             attack(enemystructs[i]);
                             xadd=0;
                             yadd=0;
@@ -482,17 +536,21 @@ int main(int argc, const char * argv[]) {
 
 
 
-void generateenemy(unsigned int X, unsigned int Y){
 
-    enemystructs[enemycount]=(enemyattributes*)malloc(sizeof(enemyattributes));
+void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr){
+
     
-    enemystructs[enemycount]->type='S';
+    
+    enemystructs[enemycount]=(enemyattributes*)malloc(sizeof(enemyattributes));
+    enemystructs[enemycount]->name=dataptr->name;
+    enemystructs[enemycount]->type=dataptr->name[0];
     enemystructs[enemycount]->x=X;
     enemystructs[enemycount]->y=Y;
-    enemystructs[enemycount]->HP=10;
-    enemystructs[enemycount]->Attack=3;
-    enemystructs[enemycount]->accuracy=3;
+    enemystructs[enemycount]->HP=dataptr->HP;
+    enemystructs[enemycount]->Attack=dataptr->Attack;
+    enemystructs[enemycount]->accuracy=dataptr->Accuracy;
     enemystructs[enemycount]->standingon='.';
+   
     ++enemycount; //no idea why but I have int incriment this outside it for the map ti wirk and inside here for the poitners to work.
     
 }
@@ -509,17 +567,22 @@ struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
 void attack(struct enemyattritbutes *enemyptr){
     if (rand()%10!=0){
         player.HP-=enemyptr->Attack;
-        printf ("Player hit, ");
+        printf ("%s hit, ", player.name);
     }
     else {
-        printf ("Player misses, ");
+        printf ("%s misses, ", player.name);
     }
     if (rand()%enemyptr->accuracy!=0){
         enemyptr->HP-=player.Attack;
         
-        printf ("enemy hit \n");
+        printf ("%s hit \n", enemyptr->name);
     }
     else {
-        printf ("enemy misses \n");
+        printf ("%s misses \n", enemyptr->name);
     }
+}
+
+void printhelpmenu(){
+    printf("-x <n> width of levels \n-y <n> hieght of levels \n-n <name> enter the name of your player (doesn't work yet) \n-h help\n");
+    return;
 }
