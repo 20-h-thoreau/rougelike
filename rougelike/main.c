@@ -45,23 +45,8 @@ const struct enemydata goblin={"Goblin\0",20,8,2};
 
 int enemycount; //lengths of enemy structs
 
-typedef struct playerattributes {
-    char *name;
-    unsigned int x;
-    unsigned int y;
-    int HP;
-    int MaxHP;
-    const struct weapondata *weaponequiped;
-    int Attack;
-    int accuracyStat;
 
-    unsigned int Gold;
-    unsigned int exp;
-    unsigned int level;
-    char standingon; //this is what block the player is currently standing on;
-} playerattributes;
 
-struct playerattributes player;
 //lets have it make a path randomly
 typedef const struct weapondata {
     char *name;
@@ -71,6 +56,7 @@ typedef const struct weapondata {
 
 const struct weapondata dagger={"dagger\0",3,3};
 const struct weapondata sword={"sword\0", 10,5};
+const struct weapondata axe={"axe\0",20,2};
 
 typedef const struct potiondata{
     char *name;
@@ -81,6 +67,32 @@ typedef const struct potiondata{
 void healthpotion(void);
 const struct potiondata health_potion={"Potion of Healing\0", &(healthpotion)};
 
+
+typedef struct Inventory {
+    char type[256];
+    const void *ptr[256];
+    char quantity[256];
+} Inventory;
+
+struct Inventory playerinventory;
+
+typedef struct playerattributes {
+    char *name;
+    unsigned int x;
+    unsigned int y;
+    int HP;
+    int MaxHP;
+    const struct weapondata *weaponequiped;
+    int Attack;
+    int accuracyStat;
+    unsigned int Gold;
+    unsigned int exp;
+    unsigned int level;
+    char standingon; //this is what block the player is currently standing on;
+    struct Inventory *inventory;
+} playerattributes;
+
+struct playerattributes player;
 
 
 
@@ -94,9 +106,15 @@ void printhelpmenu(void);
 int main(int argc, const char * argv[]) {
     
     srand(time(0));
-    stagesizex=64;
-    stagesizey=64;
+    stagesizex=32;
+    stagesizey=32;
     
+    player.inventory=&playerinventory;
+    player.inventory->type[0]='w';
+    player.inventory->ptr[0]=&dagger;
+    player.inventory->type[1]='p';
+    player.inventory->ptr[1]=&health_potion;
+    player.inventory->quantity[1]=5;
     
     player.weaponequiped = &dagger;
     player.Attack=3;// we can set this to weapon attack maybe?
