@@ -6,6 +6,7 @@
 #include <math.h>
 #define lowestroomconstant 10
 #define accu_mult 6
+#define player_accu_mult 2
 
 int stagesizey;
 int stagesizex;
@@ -296,7 +297,7 @@ int main(int argc, const char * argv[]) {
             }
             
             for (int i=0; i<enemycount; ++i){
-                if (enemystructs[i]->HP>0 && (sqrt(( (enemystructs[i]->y-player.y)*(enemystructs[i]->y-player.y))+((enemystructs[i]->x-player.x) *(enemystructs[i]->x-player.x))) <=player.accuracyStat*2)){
+                if (enemystructs[i]->HP>0 && (sqrt(( (enemystructs[i]->y-player.y)*(enemystructs[i]->y-player.y))+((enemystructs[i]->x-player.x) *(enemystructs[i]->x-player.x))) <=player.accuracyStat*player_accu_mult)){
                     map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->type;
                 }
                 else{
