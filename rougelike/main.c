@@ -5,6 +5,8 @@
 #include <string.h>
 
 #define lowestroomconstant 10
+#define accu_mult 6
+
 int stagesizey;
 int stagesizex;
 int roomconstant;//how ofte rooms appear
@@ -36,8 +38,8 @@ typedef const struct enemydata {
 
 } enemydata;
 
-const struct enemydata salamander={"Salamander\0",10,3,3};
-const struct enemydata goblin={"Goblin\0",20,4,2};
+const struct enemydata salamander={"Salamander\0",10,3,5};
+const struct enemydata goblin={"Goblin\0",20,8,2};
 
 int enemycount; //lengths of enemy structs
 
@@ -126,8 +128,8 @@ int main(int argc, const char * argv[]) {
     }
     char map[stagesizey][stagesizex];
     
-    for (unsigned short y=0; y<stagesizey; ++y){
-        for (unsigned short x=0; x<stagesizex; ++x){
+    for (unsigned int y=0; y<stagesizey; ++y){
+        for (unsigned int x=0; x<stagesizex; ++x){
 
             map[y][x]=' ';
 
@@ -260,6 +262,34 @@ int main(int argc, const char * argv[]) {
                 case '$':
                     player.standingon='.';
                     player.Gold+=5;
+                case 'A'://sometimes it glitches and he drags a enemy on his boot.
+                case 'B':
+                case 'C':
+                case 'D':
+                case 'E':
+                case 'F':
+                case 'G':
+                case 'H':
+                case 'I':
+                case 'J':
+                case 'K':
+                case 'L':
+                case 'M':
+                case 'N':
+                case 'O':
+                case 'P':
+                case 'Q':
+                case 'R':
+                case 'S':
+                case 'T':
+                case 'U':
+                case 'V':
+                case 'W':
+                case 'X':
+                case 'Y':
+                case 'Z':
+                    player.standingon='.';
+                    break;
             }
             
             for (int i=0; i<enemycount; ++i){
@@ -275,10 +305,10 @@ int main(int argc, const char * argv[]) {
             map[player.y][player.x]='@';
             
             
-            printf("level:%d \n", player.level+1);
+            printf("\nlevel:%d \n", player.level+1);
             for(int y=0; y<stagesizey; ++y){
                 for(int x=0; x<stagesizex; ++x){
-                    printf("%c ",map[y][x]);//the space after is to space it properly so its sqaureish
+                    printf(" %c",map[y][x]);//the space after is to space it properly so its sqaureish
                 }
             }
 
@@ -378,16 +408,28 @@ int main(int argc, const char * argv[]) {
                     signed int movechangedir=0;
                     int move=0x00;
                     
-                    if (x==0 && y>0){
+                    /*
+                     
+                     enemy 0,0
+                     
+                     player 1,1
+                     downright= neg neg
+                     
+                     
+                     */
+
+                    if (x>enemystructs[i]->accuracy*accu_mult || y>enemystructs[i]->accuracy*accu_mult){
+                        move=rand()&0x7;
+                    } else if (x==0 && y>0){
                         move=0;
                     }
-                    else if (x>0 && y>0){
+                    else if (x<0 && y>0){
                         move=1;
                     }
-                    else if (x>0 && y==0){
+                    else if (x<0 && y==0){
                         move=2;
                     }
-                    else if (x>0 && y>0){
+                    else if (x<0 && y<0){
                         move=3;
                     }
                     else if (x==0 && y<0){
@@ -473,7 +515,32 @@ int main(int argc, const char * argv[]) {
                                 break;
                             case '#':
                                 break;
+                            case 'A':
+                            case 'B':
+                            case 'C':
+                            case 'D':
+                            case 'E':
+                            case 'F':
+                            case 'G':
+                            case 'H':
+                            case 'I':
+                            case 'J':
+                            case 'K':
+                            case 'L':
+                            case 'M':
+                            case 'N':
+                            case 'O':
+                            case 'P':
+                            case 'Q':
+                            case 'R':
                             case 'S':
+                            case 'T':
+                            case 'U':
+                            case 'V':
+                            case 'W':
+                            case 'X':
+                            case 'Y':
+                            case 'Z':
                                 break;
                             default:
                                 canmove=true;
@@ -481,21 +548,18 @@ int main(int argc, const char * argv[]) {
                                 
                         }
                         if (enemynewlocationx==player.x && enemynewlocationy==player.y){
-                            printf("T he %s attacks:\n", enemystructs[i]->name);
+                            printf("The %s attacks:\n", enemystructs[i]->name);
                             attack(enemystructs[i]);
                             xadd=0;
                             yadd=0;
                             canmove=true;
                             break;
-                        }
-                        if (numberofloops>7){
+                        } else if (numberofloops>7){
                             canmove=true;
                             xadd=0;
                             yadd=0;
-                            printf("cant move");
-                        }
-                        
-                        if (!canmove){
+                            //printf("cant move");
+                        } else if (!canmove){
                             if(movechangedir==0){
                                 movechangedir=( ( (rand()&0x01)<<1 )-1 );//need to make it soemthing cooler
                                 //maybe we could fix it by counting 8 tries and when 8 tries fail it jsut styops trying/
@@ -540,7 +604,10 @@ int main(int argc, const char * argv[]) {
 void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr){
 
     
-    
+    if(X>stagesizex || Y> stagesizey){
+        //for some reason this happens sometimes and could mess stuff up :/
+        return;
+    }
     enemystructs[enemycount]=(enemyattributes*)malloc(sizeof(enemyattributes));
     enemystructs[enemycount]->name=dataptr->name;
     enemystructs[enemycount]->type=dataptr->name[0];
@@ -552,7 +619,7 @@ void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr){
     enemystructs[enemycount]->standingon='.';
    
     ++enemycount; //no idea why but I have int incriment this outside it for the map ti wirk and inside here for the poitners to work.
-    
+    return;
 }
 
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
@@ -583,6 +650,6 @@ void attack(struct enemyattritbutes *enemyptr){
 }
 
 void printhelpmenu(){
-    printf("-x <n> width of levels \n-y <n> hieght of levels \n-n <name> enter the name of your player (doesn't work yet) \n-h help\n");
+    printf("-x <n> width of levels \n-y <n> hieght of levels \n-n <name> enter the name of your player \n-h help\n");
     return;
 }
