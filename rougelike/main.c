@@ -105,7 +105,7 @@ int main(int argc, const char * argv[]) {
         }
         else if (strcmp(argv[i], "-n")==0){
             //this doesnt work for some reason
-            //strcpy(player.name, argv[++i]);
+            player.name=strdup(argv[++i]);
         }
         else if (strcmp(argv[i], "-h")==0){
             printhelpmenu();
