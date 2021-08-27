@@ -18,6 +18,7 @@ int branches;
 
 
 
+
 typedef struct enemyattritbutes {
     char *name;
     char type;
@@ -50,28 +51,55 @@ typedef struct playerattributes {
     unsigned int y;
     int HP;
     int MaxHP;
+    const struct weapondata *weaponequiped;
     int Attack;
-    int accuracyStat;//the stat affects weapon accuracy, while weapon accuracy determains how often you hit accuracy stat determains your senses broadly
-    int weaponaccuracy;
+    int accuracyStat;
+
     unsigned int Gold;
+    unsigned int exp;
     unsigned int level;
     char standingon; //this is what block the player is currently standing on;
 } playerattributes;
 
 struct playerattributes player;
 //lets have it make a path randomly
+typedef const struct weapondata {
+    char *name;
+    int attack;
+    int accuracy;
+} weapondata;
+
+const struct weapondata dagger={"dagger\0",3,3};
+const struct weapondata sword={"sword\0", 10,5};
+
+typedef const struct potiondata{
+    char *name;
+    void (*function);
+} potiondata;
+
+
+void healthpotion(void);
+const struct potiondata health_potion={"Potion of Healing\0", &(healthpotion)};
+
+
+
+
 
 void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr);
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y);
 void attack(struct enemyattritbutes *enemyptr);
 void printhelpmenu(void);
 
+
 int main(int argc, const char * argv[]) {
     
     srand(time(0));
     stagesizex=64;
     stagesizey=64;
-    player.Attack=10;// we can set this to weapon attack maybe?
+    
+    
+    player.weaponequiped = &dagger;
+    player.Attack=3;// we can set this to weapon attack maybe?
     roomconstant=255;//how often rooms appear
     buildtime=1000; //howlong we build for
     roomlengthmax=24;
@@ -80,7 +108,6 @@ int main(int argc, const char * argv[]) {
     player.MaxHP=30;
     player.name="Player\0";
     player.accuracyStat=3;
-    player.weaponaccuracy=player.accuracyStat*3;
     //this reintiizlizes varibles based on the envirometnal variables given by the user
     for (int i=1; i<argc; ++i){
         /*
@@ -636,7 +663,9 @@ struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
 }
 
 void attack(struct enemyattritbutes *enemyptr){
-    if (rand()%player.weaponaccuracy!=0){
+    int weaponaccuracy=player.accuracyStat*player.weaponequiped->accuracy;
+    int weaponattack=player.Attack*player.weaponequiped->attack;
+    if (rand()%weaponaccuracy!=0){
         player.HP-=enemyptr->Attack;
         printf ("%s hit, ", player.name);
     }
@@ -655,5 +684,15 @@ void attack(struct enemyattritbutes *enemyptr){
 
 void printhelpmenu(){
     printf("-x <n> width of levels \n-y <n> hieght of levels \n-n <name> enter the name of your player \n-h help\n");
+    return;
+}
+
+
+
+// potions
+
+void healthpotion(){
+    player.HP=+5*player.level;
+    player.exp=+5;
     return;
 }
