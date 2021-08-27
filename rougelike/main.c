@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <string.h>
-
+#include <math.h>
 #define lowestroomconstant 10
 #define accu_mult 6
 
@@ -50,6 +50,8 @@ typedef struct playerattributes {
     int HP;
     int MaxHP;
     int Attack;
+    int accuracyStat;//the stat affects weapon accuracy, while weapon accuracy determains how often you hit accuracy stat determains your senses broadly
+    int weaponaccuracy;
     unsigned int Gold;
     unsigned int level;
     char standingon; //this is what block the player is currently standing on;
@@ -76,7 +78,8 @@ int main(int argc, const char * argv[]) {
     branches=5;
     player.MaxHP=30;
     player.name="Player\0";
-    
+    player.accuracyStat=3;
+    player.weaponaccuracy=player.accuracyStat*3;
     //this reintiizlizes varibles based on the envirometnal variables given by the user
     for (int i=1; i<argc; ++i){
         /*
@@ -256,7 +259,7 @@ int main(int argc, const char * argv[]) {
         // player
         bool level=false;
         player.standingon='.';
-        while (!level){
+        while (!level && player.HP>0){
 
             switch (player.standingon){
                 case '$':
@@ -293,7 +296,7 @@ int main(int argc, const char * argv[]) {
             }
             
             for (int i=0; i<enemycount; ++i){
-                if (enemystructs[i]->HP>0){
+                if (enemystructs[i]->HP>0 && (sqrt(( (enemystructs[i]->y-player.y)*(enemystructs[i]->y-player.y))+((enemystructs[i]->x-player.x) *(enemystructs[i]->x-player.x))) <=player.accuracyStat*2)){
                     map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->type;
                 }
                 else{
@@ -632,7 +635,7 @@ struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
 }
 
 void attack(struct enemyattritbutes *enemyptr){
-    if (rand()%10!=0){
+    if (rand()%player.weaponaccuracy!=0){
         player.HP-=enemyptr->Attack;
         printf ("%s hit, ", player.name);
     }
