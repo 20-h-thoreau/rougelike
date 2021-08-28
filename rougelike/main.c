@@ -377,7 +377,32 @@ int main(int argc, const char * argv[]) {
                             break;
                         case '#':
                             break;
+                        case 'A'://sometimes it glitches and he drags a enemy on his boot.
+                        case 'B':
+                        case 'C':
+                        case 'D':
+                        case 'E':
+                        case 'F':
+                        case 'G':
+                        case 'H':
+                        case 'I':
+                        case 'J':
+                        case 'K':
+                        case 'L':
+                        case 'M':
+                        case 'N':
+                        case 'O':
+                        case 'P':
+                        case 'Q':
+                        case 'R':
                         case 'S':
+                        case 'T':
+                        case 'U':
+                        case 'V':
+                        case 'W':
+                        case 'X':
+                        case 'Y':
+                        case 'Z':
                             attack(whichenemyatcoord(player.x-1, player.y));
                             break;
                         default:
@@ -394,7 +419,32 @@ int main(int argc, const char * argv[]) {
                             break;
                         case '#':
                             break;
+                        case 'A'://sometimes it glitches and he drags a enemy on his boot.
+                        case 'B':
+                        case 'C':
+                        case 'D':
+                        case 'E':
+                        case 'F':
+                        case 'G':
+                        case 'H':
+                        case 'I':
+                        case 'J':
+                        case 'K':
+                        case 'L':
+                        case 'M':
+                        case 'N':
+                        case 'O':
+                        case 'P':
+                        case 'Q':
+                        case 'R':
                         case 'S':
+                        case 'T':
+                        case 'U':
+                        case 'V':
+                        case 'W':
+                        case 'X':
+                        case 'Y':
+                        case 'Z':
                             attack(whichenemyatcoord(player.x, player.y-1));
                             break;
                         default:
@@ -410,7 +460,32 @@ int main(int argc, const char * argv[]) {
                             break;
                         case '#':
                             break;
+                        case 'A'://sometimes it glitches and he drags a enemy on his boot.
+                        case 'B':
+                        case 'C':
+                        case 'D':
+                        case 'E':
+                        case 'F':
+                        case 'G':
+                        case 'H':
+                        case 'I':
+                        case 'J':
+                        case 'K':
+                        case 'L':
+                        case 'M':
+                        case 'N':
+                        case 'O':
+                        case 'P':
+                        case 'Q':
+                        case 'R':
                         case 'S':
+                        case 'T':
+                        case 'U':
+                        case 'V':
+                        case 'W':
+                        case 'X':
+                        case 'Y':
+                        case 'Z':
                             attack(whichenemyatcoord(player.x, player.y+1));
                             
                             break;
@@ -427,7 +502,32 @@ int main(int argc, const char * argv[]) {
                             break;
                         case '#':
                             break;
+                        case 'A'://sometimes it glitches and he drags a enemy on his boot.
+                        case 'B':
+                        case 'C':
+                        case 'D':
+                        case 'E':
+                        case 'F':
+                        case 'G':
+                        case 'H':
+                        case 'I':
+                        case 'J':
+                        case 'K':
+                        case 'L':
+                        case 'M':
+                        case 'N':
+                        case 'O':
+                        case 'P':
+                        case 'Q':
+                        case 'R':
                         case 'S':
+                        case 'T':
+                        case 'U':
+                        case 'V':
+                        case 'W':
+                        case 'X':
+                        case 'Y':
+                        case 'Z':
                             attack(whichenemyatcoord(player.x+1, player.y));
                             printf("the player attacks:\n");
                             break;
