@@ -69,9 +69,9 @@ const struct potiondata health_potion={"Potion of Healing\0", &(healthpotion)};
 
 
 typedef struct Inventory {
-    char type[256];
-    const void *ptr[256];
-    char quantity[256];
+    char type[128];
+    void *ptr[128];
+    char quantity[128];
 } Inventory;
 
 struct Inventory playerinventory;
@@ -97,19 +97,21 @@ struct playerattributes player;
 
 
 
-void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr);
+int generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr);
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y);
 void attack(struct enemyattritbutes *enemyptr);
 void printhelpmenu(void);
-
+int displayinventory(void);
 
 int main(int argc, const char * argv[]) {
     
     srand(time(0));
     stagesizex=32;
     stagesizey=32;
-    
     player.inventory=&playerinventory;
+    for(char i=0; i<0x7f; ++i){
+        player.inventory->ptr[i]=NULL;
+    }
     player.inventory->type[0]='w';
     player.inventory->ptr[0]=&dagger;
     player.inventory->type[1]='p';
@@ -216,7 +218,7 @@ int main(int argc, const char * argv[]) {
                 
                 
                 room=rand()%roomconstant;
-                int xlength, ylength;
+                int xlength, ylength,ret;
                 switch(room) {//this will decide what we do, whether we move, or build a room
                     case 0:
                         if(map[y][x+1]==' ' && map[y][x-1]==' ' && map[y+1][x]==' ' && map[y-1][x]==' '){
@@ -235,24 +237,24 @@ int main(int argc, const char * argv[]) {
                     case 2:
                         //map[y][x]='S';
                         if (x!=startingx && y!=startingy){
-                            generateenemy(x, y, &salamander);
-                            ++enemycount;
+                            ret=generateenemy(x, y, &salamander);
+                            if(ret==0){++enemycount;}
                         }
                         break;
 
                     case 3:
                         //map[y][x]='S';
                         if (x!=startingx && y!=startingy){
-                            generateenemy(x, y, &salamander);
-                            ++enemycount;
+                            ret=generateenemy(x, y, &salamander);
+                            if(ret==0){++enemycount;}
                         }
                         break;
                         
                     case 4:
                         //map[y][x]='G';
                         if (x!=startingx && y!=startingy){
-                            generateenemy(x, y, &goblin);
-                            ++enemycount;
+                            ret=generateenemy(x, y, &goblin);
+                            if(ret==0){++enemycount;}
                         }
                         break;
                         
@@ -544,6 +546,9 @@ int main(int argc, const char * argv[]) {
                         ++player.level;
                     }
                     break;
+                case 'i':
+                    displayinventory();
+                    goto levelloop;
                 default:
                     break;
             }
@@ -750,12 +755,12 @@ int main(int argc, const char * argv[]) {
 
 
 
-void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr){
+int generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr){
 
     
     if(X>stagesizex || Y> stagesizey){
         //for some reason this happens sometimes and could mess stuff up :/
-        return;
+        return 1;
     }
     enemystructs[enemycount]=(enemyattributes*)malloc(sizeof(enemyattributes));
     enemystructs[enemycount]->name=dataptr->name;
@@ -768,7 +773,7 @@ void generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr){
     enemystructs[enemycount]->standingon='.';
    
     ++enemycount; //no idea why but I have int incriment this outside it for the map ti wirk and inside here for the poitners to work.
-    return;
+    return 0;
 }
 
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
@@ -805,8 +810,34 @@ void printhelpmenu(){
     return;
 }
 
+int displayinventory(){
+    void *pointer;
+    for (char i=0; i<0x7f && playerinventory.ptr[i&0x7f]!=NULL; ++i){
+        printf("(%d) ",i+1);
+        switch (playerinventory.type[i]){
+            case 'p':
+                pointer=playerinventory.ptr[i];
+                printf("%s x%d", ((const struct potiondata *)pointer)->name, player.inventory->quantity[i]);
+                break;
+            case 'w':
+                pointer=playerinventory.ptr[i];
+                printf("%s", ((const struct weapondata *)pointer)->name);
+                break;
+            case 's':
+                break;
+        }
+        printf("\n");
+            
+    }
+    return 0;
+}
+/*typedef struct Inventory {
+ char type[256];
+ const void *ptr[256];
+ char quantity[256];
+} Inventory;
 
-
+struct Inventory playerinventory;*/
 // potions
 
 void healthpotion(){
