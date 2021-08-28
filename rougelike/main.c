@@ -60,7 +60,7 @@ const struct weapondata axe={"axe\0",20,2};
 
 typedef const struct potiondata{
     char *name;
-    void (*function);
+    void (*function)(void);
 } potiondata;
 
 
@@ -102,6 +102,8 @@ struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y);
 void attack(struct enemyattritbutes *enemyptr);
 void printhelpmenu(void);
 int displayinventory(void);
+void useitem(void);
+void clearitemslot(char item);
 
 int main(int argc, const char * argv[]) {
     
@@ -113,12 +115,12 @@ int main(int argc, const char * argv[]) {
         player.inventory->ptr[i]=NULL;
     }
     player.inventory->type[0]='w';
-    player.inventory->ptr[0]=&dagger;
+    player.inventory->ptr[0]=&sword;
     player.inventory->type[1]='p';
     player.inventory->ptr[1]=&health_potion;
     player.inventory->quantity[1]=5;
     
-    player.weaponequiped = &dagger;
+    player.weaponequiped = &sword;
     player.Attack=3;// we can set this to weapon attack maybe?
     roomconstant=255;//how often rooms appear
     buildtime=1000; //howlong we build for
@@ -548,6 +550,7 @@ int main(int argc, const char * argv[]) {
                     break;
                 case 'i':
                     displayinventory();
+                    useitem();
                     goto levelloop;
                 default:
                     break;
@@ -744,10 +747,6 @@ int main(int argc, const char * argv[]) {
         
     }
     
-    
-    
-    
-    
     return 0;
 
 }
@@ -831,6 +830,40 @@ int displayinventory(){
     }
     return 0;
 }
+
+void useitem(){
+    int item;
+    void *pointer;
+getnewchar:
+    scanf("%d", &item);
+    item=2;
+    --item;
+    if (item>0x7f){
+        printf("sorry, that number is too large");
+        goto getnewchar;
+    }
+    switch (player.inventory->type[item]){
+        case 'p':
+            pointer=player.inventory->ptr[item];
+            ((const struct potiondata *)pointer)->function();
+            --player.inventory->quantity[item];
+            if (player.inventory->quantity[item]<=0){
+                clearitemslot((char)item);
+            }
+            break;
+        case 'w':
+            player.weaponequiped=player.inventory->ptr[item];
+            break;
+    }
+}
+
+void clearitemslot(char item){
+    for (char i=item; i<0x7f && playerinventory.ptr[i&0x7f]!=NULL; ++i){
+        playerinventory.type[i]=playerinventory.type[i+1];
+        playerinventory.ptr[i]=playerinventory.ptr[i+1];
+        playerinventory.quantity[i]=playerinventory.quantity[i+1];
+    }
+}
 /*typedef struct Inventory {
  char type[256];
  const void *ptr[256];
@@ -841,7 +874,10 @@ struct Inventory playerinventory;*/
 // potions
 
 void healthpotion(){
-    player.HP=+5*player.level;
+    
+    player.HP+=(10*player.level+1);
+    if (player.HP>player.MaxHP){
+        player.HP=player.MaxHP;
+    }
     player.exp=+5;
-    return;
 }
