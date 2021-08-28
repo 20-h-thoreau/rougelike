@@ -96,13 +96,12 @@ struct playerattributes player;
 
 
 
-
 int generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr);
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y);
 void attack(struct enemyattritbutes *enemyptr);
 void printhelpmenu(void);
 int displayinventory(void);
-void useitem(void);
+int useitem(void);
 void clearitemslot(char item);
 
 int main(int argc, const char * argv[]) {
@@ -114,11 +113,16 @@ int main(int argc, const char * argv[]) {
     for(char i=0; i<0x7f; ++i){
         player.inventory->ptr[i]=NULL;
     }
-    player.inventory->type[0]='w';
+    int temp;
+    player.inventory->type[temp]='w';
     player.inventory->ptr[0]=&sword;
-    player.inventory->type[1]='p';
-    player.inventory->ptr[1]=&health_potion;
-    player.inventory->quantity[1]=5;
+    ++temp;
+    player.inventory->type[temp]='p';
+    player.inventory->ptr[temp]=&health_potion;
+    player.inventory->quantity[temp]=5;
+    ++temp;
+    player.inventory->type[temp]='q';//this is the exit option to exit the menu;
+    player.inventory->ptr[temp]=player.inventory;
     
     player.weaponequiped = &sword;
     player.Attack=3;// we can set this to weapon attack maybe?
@@ -356,7 +360,7 @@ int main(int argc, const char * argv[]) {
             
             
             map[player.y][player.x]='@';
-            
+            int playeriventorychecks=0;
             
             printf("\nlevel:%d \n", player.level+1);
             for(int y=0; y<stagesizey; ++y){
@@ -550,8 +554,13 @@ int main(int argc, const char * argv[]) {
                     break;
                 case 'i':
                     displayinventory();
-                    useitem();
+                    playeriventorychecks=useitem();
+                    if(playeriventorychecks<=1){
                     goto levelloop;
+                    }
+                    else{
+                        break;
+                    }
                 default:
                     break;
             }
@@ -795,7 +804,7 @@ void attack(struct enemyattritbutes *enemyptr){
         printf ("%s misses, ", player.name);
     }
     if (rand()%enemyptr->accuracy!=0){
-        enemyptr->HP-=player.Attack;
+        enemyptr->HP-=weaponattack;
         
         printf ("%s hit \n", enemyptr->name);
     }
@@ -824,22 +833,29 @@ int displayinventory(){
                 break;
             case 's':
                 break;
+            case 'q':
+                printf("exit");
+                break;
         }
         printf("\n");
             
     }
+    printf("\n");
     return 0;
 }
 
-void useitem(){
+int useitem(){
     int item;
     void *pointer;
+    char test='a';
+    while(test!='\n'){
+        test=getchar();
+    }
 getnewchar:
     scanf("%d", &item);
-    item=2;
     --item;
     if (item>0x7f){
-        printf("sorry, that number is too large");
+        printf("sorry, that number is too large\n");
         goto getnewchar;
     }
     switch (player.inventory->type[item]){
@@ -850,11 +866,18 @@ getnewchar:
             if (player.inventory->quantity[item]<=0){
                 clearitemslot((char)item);
             }
+            printf("\n%s drank a %s\n", player.name, ((const struct potiondata *)pointer)->name);
             break;
         case 'w':
             player.weaponequiped=player.inventory->ptr[item];
+            printf("\n%s equiped a %s\n", player.name, ((const struct weapondata *)player.weaponequiped)->name);
             break;
+        case 'q':
+            printf("\n");
+            return 0;
+        
     }
+    return 1;
 }
 
 void clearitemslot(char item){
