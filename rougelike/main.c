@@ -7,7 +7,7 @@
 #define lowestroomconstant 10
 #define accu_mult 6
 #define player_accu_mult 2
-
+#define maximumlevel sizeof(levelup)
 int stagesizey;
 int stagesizex;
 int roomconstant;//how ofte rooms appear
@@ -16,7 +16,13 @@ int roomlengthmax;
 int roomlenghtmin;
 int branches;
 
-
+int d20(int num);
+int d12(int num);
+int d10(int num);
+int d8(int num);
+int d6(int num);
+int d4(int num);
+int dice(int count, int num);
 
 
 typedef struct enemyattritbutes {
@@ -25,9 +31,11 @@ typedef struct enemyattritbutes {
     unsigned int x;
     unsigned int y;
     int HP;
-    int Attack;
+    int count;
+    int dice;
     int accuracy;
     char standingon;
+    int expgain;
 } enemyattributes;
 
 struct enemyattritbutes *enemystructs[256]; //pointer to enemy structs
@@ -35,13 +43,15 @@ struct enemyattritbutes *enemystructs[256]; //pointer to enemy structs
 typedef const struct enemydata {
     char *name;
     int HP;
-    int Attack;
-    int Accuracy;
+    int count;
+    int dice;
+    signed int Accuracy;
+    int expgain;
 
 } enemydata;
 
-const struct enemydata salamander={"Salamander\0",10,3,5};
-const struct enemydata goblin={"Goblin\0",20,8,2};
+const struct enemydata salamander={"Salamander\0",10,1,4,4,10};
+const struct enemydata goblin={"Goblin\0",20,1,10,-1,20};
 
 int enemycount; //lengths of enemy structs
 
@@ -50,13 +60,14 @@ int enemycount; //lengths of enemy structs
 //lets have it make a path randomly
 typedef const struct weapondata {
     char *name;
-    int attack;
+    int count;
+    int dice;
     int accuracy;
 } weapondata;
 
-const struct weapondata dagger={"dagger\0",3,3};
-const struct weapondata sword={"sword\0", 10,5};
-const struct weapondata axe={"axe\0",20,2};
+const struct weapondata dagger={"dagger\0",1,6,3};
+const struct weapondata sword={"sword\0", 3,4,5};
+const struct weapondata axe={"axe\0",2,4,2};
 
 typedef const struct potiondata{
     char *name;
@@ -88,13 +99,14 @@ typedef struct playerattributes {
     unsigned int Gold;
     unsigned int exp;
     unsigned int level;
+    unsigned int floor;
     char standingon; //this is what block the player is currently standing on;
     struct Inventory *inventory;
 } playerattributes;
 
 struct playerattributes player;
 
-
+const int levelup[7]={200,400,800,1600,3200,6400,12800};
 
 int generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr);
 struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y);
@@ -113,9 +125,9 @@ int main(int argc, const char * argv[]) {
     for(char i=0; i<0x7f; ++i){
         player.inventory->ptr[i]=NULL;
     }
-    int temp;
+    int temp=0;
     player.inventory->type[temp]='w';
-    player.inventory->ptr[0]=&sword;
+    player.inventory->ptr[0]=&dagger;
     ++temp;
     player.inventory->type[temp]='p';
     player.inventory->ptr[temp]=&health_potion;
@@ -125,7 +137,7 @@ int main(int argc, const char * argv[]) {
     player.inventory->ptr[temp]=player.inventory;
     
     player.weaponequiped = &sword;
-    player.Attack=3;// we can set this to weapon attack maybe?
+    player.Attack=0;// we can set this to weapon attack maybe?
     roomconstant=255;//how often rooms appear
     buildtime=1000; //howlong we build for
     roomlengthmax=24;
@@ -134,6 +146,8 @@ int main(int argc, const char * argv[]) {
     player.MaxHP=30;
     player.name="Player\0";
     player.accuracyStat=3;
+    player.level=0;
+    player.floor=0;
     //this reintiizlizes varibles based on the envirometnal variables given by the user
     for (int i=1; i<argc; ++i){
         /*
@@ -311,10 +325,13 @@ int main(int argc, const char * argv[]) {
         
         
         // player
+        
+        
+        
         bool level=false;
         player.standingon='.';
         while (!level && player.HP>0){
-
+            
             switch (player.standingon){
                 case '$':
                     player.standingon='.';
@@ -350,19 +367,31 @@ int main(int argc, const char * argv[]) {
             }
             
             for (int i=0; i<enemycount; ++i){
+                if(enemystructs[i]->y==player.y && enemystructs[i]->x==player.x){
+                    enemystructs[i]->HP=0;
+                }
                 if (enemystructs[i]->HP>0 && (sqrt(( (enemystructs[i]->y-player.y)*(enemystructs[i]->y-player.y))+((enemystructs[i]->x-player.x) *(enemystructs[i]->x-player.x))) <=player.accuracyStat*player_accu_mult)){
                     map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->type;
                 }
                 else{
                     map[enemystructs[i]->y][enemystructs[i]->x]=enemystructs[i]->standingon;
                 }
+
             }
             
             
             map[player.y][player.x]='@';
             int playeriventorychecks=0;
+    
+            if (player.exp>=levelup[player.level] && player.level!=maximumlevel){
+                player.exp-=levelup[player.level++];
+            }
+
+            printf("\nlevel:%d\n", player.level+1);
+            printf("exp: %d / %d",player.exp, levelup[player.level]);
+            printf("                                           ");
             
-            printf("\nlevel:%d \n", player.level+1);
+            printf("floor %d\n", player.floor+1);
             for(int y=0; y<stagesizey; ++y){
                 for(int x=0; x<stagesizex; ++x){
                     printf(" %c",map[y][x]);//the space after is to space it properly so its sqaureish
@@ -549,7 +578,7 @@ int main(int argc, const char * argv[]) {
                 case '>':
                     if (player.standingon=='%'){
                         level=true;
-                        ++player.level;
+                        ++player.floor;
                     }
                     break;
                 case 'i':
@@ -776,8 +805,10 @@ int generateenemy(unsigned int X, unsigned int Y, enemydata *dataptr){
     enemystructs[enemycount]->x=X;
     enemystructs[enemycount]->y=Y;
     enemystructs[enemycount]->HP=dataptr->HP;
-    enemystructs[enemycount]->Attack=dataptr->Attack;
+    enemystructs[enemycount]->dice=dataptr->dice;
+    enemystructs[enemycount]->count=dataptr->count;
     enemystructs[enemycount]->accuracy=dataptr->Accuracy;
+    enemystructs[enemycount]->expgain=dataptr->expgain;
     enemystructs[enemycount]->standingon='.';
    
     ++enemycount; //no idea why but I have int incriment this outside it for the map ti wirk and inside here for the poitners to work.
@@ -794,17 +825,21 @@ struct enemyattritbutes *whichenemyatcoord(unsigned int x,unsigned int y){
 }
 
 void attack(struct enemyattritbutes *enemyptr){
-    int weaponaccuracy=player.accuracyStat*player.weaponequiped->accuracy;
-    int weaponattack=player.Attack*player.weaponequiped->attack;
-    if (rand()%weaponaccuracy!=0){
-        player.HP-=enemyptr->Attack;
+    int weaponaccuracy=player.accuracyStat+player.weaponequiped->accuracy;
+    if (d20(1)+weaponaccuracy>=10){
+        enemyptr->HP-=player.Attack+dice(player.weaponequiped->count, player.weaponequiped->dice);
         printf ("%s hit, ", player.name);
+        if(enemyptr->HP<=0){
+            player.exp+=enemyptr->expgain;
+            printf("%s dies\n", enemyptr->name);
+            return;
+        }
     }
     else {
         printf ("%s misses, ", player.name);
     }
-    if (rand()%enemyptr->accuracy!=0){
-        enemyptr->HP-=weaponattack;
+    if (d20(1)+enemyptr->accuracy>10){
+        player.HP-=dice(enemyptr->count,enemyptr->dice);
         
         printf ("%s hit \n", enemyptr->name);
     }
@@ -898,9 +933,75 @@ struct Inventory playerinventory;*/
 
 void healthpotion(){
     
-    player.HP+=(10*player.level+1);
+    player.HP+=(d4(3+(player.level>>2))+(5*(player.level+1)));
     if (player.HP>player.MaxHP){
         player.HP=player.MaxHP;
     }
     player.exp=+5;
+}
+
+
+int d20(int num){
+    int ret=0;
+    for (int i=0; i<num; ++i){
+         ret+=(rand()%20);
+    }
+    return ret;
+}
+                                    
+int d12(int num){
+    int ret=0;
+    for (int i=0; i<num; ++i){
+         ret+=(rand()%12);
+    }
+    return ret;
+}
+int d10(int num){
+    int ret=0;
+    for (int i=0; i<num; ++i){
+         ret+=(rand()%10);
+    }
+    return ret;
+}
+
+int d8(int num){
+    int ret=0;
+    for (int i=0; i<num; ++i){
+         ret+=(rand()%8);
+    }
+    return ret;
+}
+
+int d6(int num){
+    int ret=0;
+    for (int i=0; i<num; ++i){
+         ret+=(rand()%6);
+    }
+    return ret;
+}
+
+int d4(int num){
+    int ret=0;
+    for (int i=0; i<num; ++i){
+         ret+=(rand()%4);
+    }
+    return ret;
+}
+int dice(int count,int num){
+    switch (num){
+        case 4:
+            return d4(count);
+        case 6:
+            return d6(count);
+        case 8:
+            return d8(count);
+        case 10:
+            return d10(count);
+        case 12:
+            return d12(count);
+        case 20:
+            return d20(count);
+        default:
+            return 0;
+        }
 }
